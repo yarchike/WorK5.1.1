@@ -98,6 +98,7 @@ public class ListViewActivity extends AppCompatActivity implements View.OnClickL
         }
 
     }
+
     public void loadFile() {
         String result = load();
 
@@ -115,8 +116,8 @@ public class ListViewActivity extends AppCompatActivity implements View.OnClickL
         String result = "";
         if (isExternalStorageWritable()) {
 
-            File file = new File(Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS), "list.txt");
+            File file = new File(getApplicationContext().getExternalFilesDir(
+                    null), "list.txt");
             try {
                 BufferedReader br = new BufferedReader(new FileReader(file));
                 while ((str = br.readLine()) != null) {
@@ -145,14 +146,14 @@ public class ListViewActivity extends AppCompatActivity implements View.OnClickL
         EditText eText = findViewById(R.id.newList);
         String input = eText.getText().toString();
         if (isExternalStorageWritable()) {
-            File file = new File(Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS), "list.txt");
+            File file = new File(getApplicationContext().getExternalFilesDir(
+                    null), "list.txt");
             String temp = load();
             try {
                 BufferedWriter bw = new BufferedWriter(new FileWriter(file));
                 bw.write(input + ";");
                 bw.close();
-                FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
+                FileWriter fw = new FileWriter(file, true);
                 BufferedWriter bwrite = new BufferedWriter(fw);
                 bwrite.write(temp);
                 bwrite.close();
