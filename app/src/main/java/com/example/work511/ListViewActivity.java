@@ -1,8 +1,5 @@
 package com.example.work511;
 
-import android.Manifest;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -11,19 +8,15 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -33,13 +26,11 @@ import java.util.List;
 import java.util.Map;
 
 public class ListViewActivity extends AppCompatActivity implements View.OnClickListener {
-    public static final int REQUSET_CODE_PERMISSION_WRITE_STORAGE = 10;
     static final String KEY1 = "Key1";
     static final String KEY2 = "Key2";
     static final String DATAS = "DataS";
     private List<Map<String, String>> simpleAdapterContent = new ArrayList<>();
     private ListView list;
-    private SharedPreferences sharedPref;
     private SwipeRefreshLayout swipeLayout;
     private BaseAdapter listContentAdapter;
     final String LOG_TAG = "myLogs";
@@ -55,14 +46,9 @@ public class ListViewActivity extends AppCompatActivity implements View.OnClickL
         list = findViewById(R.id.list);
         setSupportActionBar(toolbar);
 
+        loadFile();
+        btnAdd.setOnClickListener(this);
 
-        int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
-            loadFile();
-            btnAdd.setOnClickListener(this);
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUSET_CODE_PERMISSION_WRITE_STORAGE);
-        }
         listContentAdapter = createAdapter(simpleAdapterContent);
         list.setAdapter(listContentAdapter);
 
@@ -80,23 +66,6 @@ public class ListViewActivity extends AppCompatActivity implements View.OnClickL
     @NonNull
     private BaseAdapter createAdapter(List<Map<String, String>> values) {
         return new MyCustomAdapter(values, getApplicationContext());
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-
-        switch (requestCode) {
-            case REQUSET_CODE_PERMISSION_WRITE_STORAGE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    loadFile();
-                    Button btnAdd = findViewById(R.id.buttonAdd);
-                    btnAdd.setOnClickListener(this);
-                } else {
-                    Toast toast = Toast.makeText(getApplicationContext(), getString(R.string.no_access), Toast.LENGTH_SHORT);
-                    toast.show();
-                }
-        }
-
     }
 
     public void loadFile() {
@@ -118,14 +87,11 @@ public class ListViewActivity extends AppCompatActivity implements View.OnClickL
 
             File file = new File(getApplicationContext().getExternalFilesDir(
                     null), "list.txt");
-            try {
-                BufferedReader br = new BufferedReader(new FileReader(file));
+            try (BufferedReader br = new BufferedReader(new FileReader(file));) {
                 while ((str = br.readLine()) != null) {
                     result = result.concat(str);
                     Log.d(LOG_TAG, str);
                 }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -149,8 +115,8 @@ public class ListViewActivity extends AppCompatActivity implements View.OnClickL
             File file = new File(getApplicationContext().getExternalFilesDir(
                     null), "list.txt");
             String temp = load();
-            try {
-                BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+
                 bw.write(input + ";");
                 bw.close();
                 FileWriter fw = new FileWriter(file, true);
